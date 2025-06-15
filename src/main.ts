@@ -2,7 +2,13 @@ import { Kysely, SqliteDialect } from "kysely";
 import SQLite from "better-sqlite3";
 
 import { down, up } from "./migration";
-import { Database, NewPerson, Person, PersonUpdate } from "./types";
+import { Database, NewPerson, PersonUpdate } from "./types";
+import {
+  findPersonById,
+  createPerson,
+  updatePerson,
+  deletePerson,
+} from "./persistence";
 
 export function getPath(): string {
   return "./db.sqlite";
@@ -51,39 +57,4 @@ async function main() {
   } catch (error) {
     console.error("Error rolling back database:", error);
   }
-}
-
-export async function findPersonById(
-  db: Kysely<Database>,
-  id: number,
-): Promise<Person | undefined> {
-  return await db
-    .selectFrom("person")
-    .where("id", "=", id)
-    .selectAll()
-    .executeTakeFirst();
-}
-
-export async function updatePerson(
-  db: Kysely<Database>,
-  id: number,
-  updateWith: PersonUpdate,
-) {
-  await db.updateTable("person").set(updateWith).where("id", "=", id).execute();
-}
-
-export async function createPerson(db: Kysely<Database>, person: NewPerson) {
-  return await db
-    .insertInto("person")
-    .values(person)
-    .returningAll()
-    .executeTakeFirstOrThrow();
-}
-
-export async function deletePerson(db: Kysely<Database>, id: number) {
-  return await db
-    .deleteFrom("person")
-    .where("id", "=", id)
-    .returningAll()
-    .executeTakeFirst();
 }
